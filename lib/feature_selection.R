@@ -16,6 +16,7 @@ library(leaps)
 library(glmnet)
 library(caret)
 library(randomForest)
+
 #getwd()
 #setwd("~/Documents/GitHub/Fall2020-Project3-group6/lib/")
 load("../output/feature_train.RData")
@@ -64,15 +65,9 @@ pca <- preProcess(x=dat_train,method="pca",thresh=0.99)
 pca_feature <- predict(pca,dat_train[,-6007])
 save(pca_feature, file="../output/pca_feature.RData")
 
-# RFE-------------------------------------------------------------------------
-rfe_fit = rfe(dat_train[,-6007], dat_train[,6007], sizes = seq(140,320,20),
-              rfeControl = rfeControl(functions = lmFuncs, rerank = TRUE, number = 10))
-
-save(rfe_fit, file="../output/feature_selection.RData")
-
 # Random Forest-------------------------------------------------------------------------
 rf_fit = randomForest(label~.,data=dat_train,importance = TRUE)
-save(rf_fit, file="../output/feature_selection.RData")
+save(rf_fit, file="../output/rf_feature.RData")
 
 # not sure 
 rf_feat <- as.data.frame(importance(rf_fit))
