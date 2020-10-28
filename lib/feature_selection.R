@@ -1,11 +1,26 @@
+if(!require("leaps")){
+  install.packages("leaps")
+}
+if(!require("caret")){
+  install.packages("caret")
+}
+if(!require("glmnet")){
+  install.packages("glmnet")
+}
+if(!require("randomForest")){
+  install.packages("randomForest")
+}
+
+
 library(leaps)
 library(glmnet)
 library(caret)
 library(randomForest)
-getwd()
-setwd("~/Documents/GitHub/Fall2020-Project3-group6/lib/")
+#getwd()
+#setwd("~/Documents/GitHub/Fall2020-Project3-group6/lib/")
 load("../output/feature_train.RData")
-# Best Subset Selection
+
+# Best Subset Selection----------------------------------------------------------------
 # best_fit <- regsubsets(label ~ ., data = dat_train)
 
 # Forward Stepwise Selection-------------------------------------------------------------------------
@@ -63,11 +78,7 @@ save(rf_fit, file="../output/feature_selection.RData")
 rf_feat <- as.data.frame(importance(rf_fit))
 rf_names <- rownames(rf_feat[order(rf_feat$MeanDecreaseAccuracy), ])[1:length(forward_feature)]
 
-
-varImpPlot(rf_fit)
-importance(rf_fit)
-
 yhat.rf = predict(rf_fit,newdata = dat_test)
-mean((yhat.rf-dat_test$label)^2)
+mean(yhat.rf == dat_test$label)
 
 
