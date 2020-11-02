@@ -61,7 +61,7 @@ length(lasso_feature[lasso_feature != 0])
 save(lasso_feature, file="../output/lasso_feature.RData")
 
 # PCA-------------------------------------------------------------------------
-pca <- preProcess(x=dat_train,method="pca",thresh=0.99)
+pca <- preProcess(x=dat_train,method="pca",thresh=0.95)
 pca_feature <- predict(pca,dat_train[,-6007])
 save(pca_feature, file="../output/pca_feature.RData")
 
