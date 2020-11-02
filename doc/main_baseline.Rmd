@@ -188,9 +188,9 @@ Call the train model and test model from library.
 + In this part, we use GBM to do classification. 
   
 ```{r loadlib}
-source("../lib/train baseline.R") 
-source("../lib/test baseline.R")
-source("../lib/cv baseline.R")
+source("../lib/train_baseline.R") 
+source("../lib/test_baseline.R")
+source("../lib/cv_baseline.R")
 ```  
 
 #### Model selection with cross-validation
