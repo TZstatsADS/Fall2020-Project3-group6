@@ -2,7 +2,6 @@
 title: "Main Baseline"
 author: "Yiqi Lei Group 6"
 output:
-<<<<<<< HEAD
   html_document:
     df_print: paged
   html_notebook: default
@@ -10,13 +9,6 @@ output:
 ---
 
 ```{r message=FALSE,warning=FALSE}
-=======
-  pdf_document: default
-  html_notebook: default
----
-
-```{r message=FALSE}
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 if(!require("EBImage")){
   install.packages("BiocManager")
   BiocManager::install("EBImage")
@@ -51,7 +43,6 @@ if(!require("WeightedROC")){
   install.packages("WeightedROC")
 }
 
-<<<<<<< HEAD
 if(!require("gbm")){
   install.packages("gbm")
 }
@@ -60,8 +51,6 @@ if(!require("tidyverse")){
   install.packages("tidyverse")
 }
 
-=======
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 library(R.matlab)
 library(readxl)
 library(dplyr)
@@ -71,10 +60,7 @@ library(caret)
 library(glmnet)
 library(WeightedROC)
 library(gbm)
-<<<<<<< HEAD
 library(tidyverse)
-=======
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 ```
 
 ### Step 0 set work directories
@@ -120,11 +106,7 @@ In this part, we tune parameters n.trees (total number of trees) and shrinkage (
 n.trees  <- c(40,50,60,70) #40-70
 shrinkage <- c(0.01,0.05,0.1,0.15) #0.01-1
 
-<<<<<<< HEAD
 #model_labels = paste("GBM with n.trees =", n.trees,"and shrinkage =",shrinkage) 
-=======
-model_labels = paste("GBM with n.trees =", n.trees,"and shrinkage =",shrinkage) 
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 ```
 
 ### Step 2: import data and train-test split 
@@ -225,7 +207,6 @@ source("../lib/cv_baseline.R")
 #### Model selection with cross-validation
 * Do model selection by choosing among different values of training model parameters.
 ```{r}
-<<<<<<< HEAD
 #feature_train = dat_train[, -6007]
 #label_train = dat_train$label
 feature_train = as.matrix(dat_train[, -6007]) 
@@ -233,13 +214,6 @@ label_train = as.integer(dat_train$label)
 ```
 
 ```{r,eval=FALSE}
-=======
-feature_train = dat_train[, -6007]
-label_train = dat_train$label
-```
-
-```{r}
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 if(run.cv){
   
 mean.error_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
@@ -267,7 +241,6 @@ sd.AUC_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
     }
   }
 
-<<<<<<< HEAD
 save(mean.error_cv, file="../output/mean.error_cv.RData")
 save(sd.error_cv, file="../output/sd.error_cv.RData")
 save(mean.AUC_cv, file="../output/mean.AUC_cv.RData")
@@ -279,23 +252,13 @@ save(sd.AUC_cv, file="../output/sd.AUC_cv.RData")
   load("../output/mean.AUC_cv.RData")
   load("../output/sd.AUC_cv.RData")
   
-=======
-save(res_cv, file="../output/res_cv.RData")
-
-}else{
-load("../output/res_cv.RData")
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
   }
 
 ```
 
 Visualize cross-validation results. 
 
-<<<<<<< HEAD
 ```{r,eval=FALSE}
-=======
-```{r cv_vis}
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 df.mean.error<-data.frame(mean.error_cv)%>%
   setNames(shrinkage)%>%
   mutate(n.trees=n.trees)%>%
@@ -319,7 +282,6 @@ df.sd.AUC<-data.frame(sd.AUC_cv)%>%
 res_cvvv<-df.mean.error%>%mutate(sd.error=df.sd.error$sd.error,
                                  mean.AUC=df.mean.AUC$mean.AUC,
                                  sd.AUC=df.sd.AUC$sd.AUC)
-<<<<<<< HEAD
 
 save(res_cvvv, file="../output/res_cvvv.RData")
 ```
@@ -327,11 +289,6 @@ save(res_cvvv, file="../output/res_cvvv.RData")
 ```{r cv_vis}
 load("../output/res_cvvv.RData")
 
-=======
-```
-
-```{r cv_vis}
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 if(run.cv){
   p1 <- res_cvvv%>%
     ggplot(aes(x = n.trees, y = mean.error,
@@ -363,11 +320,7 @@ n.trees_best
 shrinkage_best
 ```
 
-<<<<<<< HEAD
 * Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are n.trees=`r n.trees_best` and shrinkage=`r shrinkage_best`.
-=======
-* Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are n.trees=0.01 and shrinkage=40.
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 
 ```{r final_train}
 # training weights
@@ -423,13 +376,8 @@ accu <- mean(label_pred == label_test)
 tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
 auc <- WeightedAUC(tpr.fpr)
 
-<<<<<<< HEAD
 cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", accu*100, "%.\n")
 cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", auc, ".\n")
-=======
-cat("The accuracy of model:", model_labels[which.min(res_cvvv$mean.error)], "is", accu*100, "%.\n")
-cat("The AUC of model:", model_labels[which.min(res_cvvv$mean.error)], "is", auc, ".\n")
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 
 ```
 

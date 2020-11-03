@@ -48,26 +48,14 @@ if (reweight==T){
 }
 
 
-<<<<<<< HEAD
-=======
-#model_train<-train(feature_train,label_train,n.trees,shrinkage)
-
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 ## make predictions
 
 label_pred <- test(model_train, feature_test,n.trees,shrinkage,pred.type="link")
 
 prob_pred <- test(model_train, feature_test,n.trees,shrinkage,pred.type="response")
 
-<<<<<<< HEAD
 cv.error[i] <- 1 - sum(weight_test * (label_pred == label_test)) / sum(weight_test)
 
-=======
-#cv.error[i] <- mean(label_pred!=label_test)没weight的时候写的
-cv.error[i] <- 1 - sum(weight_test * (label_pred == label_test)) / sum(weight_test)
-
-#tpr.fpr <- WeightedROC(prob_pred, label_test)
->>>>>>> 74c8781d4255a0ac6d050698836a514efaa48ffb
 tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
 
 cv.AUC[i] <- WeightedAUC(tpr.fpr)
