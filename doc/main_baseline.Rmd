@@ -8,7 +8,7 @@ output:
   pdf_document: default
 ---
 
-```{r message=FALSE,warning=FALSE}
+```{r,message=FALSE,warning=FALSE}
 if(!require("EBImage")){
   install.packages("BiocManager")
   BiocManager::install("EBImage")
