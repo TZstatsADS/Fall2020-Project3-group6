@@ -6,13 +6,13 @@
 
 Term: Fall 2020
 
-+ Team ##
++ Team 6
 + Team members
-	+ team member 1
-	+ team member 2
-	+ team member 3
-	+ team member 4
-	+ team member 5
+	+ Mengyao He
+	+ Qinzhe Hu
+	+ Yiqi Lei
+	+ Yuwei Tong
+	+ Jiaqi Yuan
 
 + Project summary: In this project, we created a classification engine for facial emotion recognition. 
 	
