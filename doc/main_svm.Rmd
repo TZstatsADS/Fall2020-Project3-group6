@@ -206,7 +206,7 @@ feature_train = as.matrix(dat_train[, -6007])
 label_train = as.integer(dat_train$label) 
 
 if(run.tune.svm){
-  tune_svm <- tune.svm(label~., data=dat_train, kernel='polynomial', degree=3, cost=10^(0:2), gamma=c(0.003,0.005,0.007), class.weights=list(c('0'=1, '1'=4)), tunecontrol=tune.control(cross = 5))
+  tune_svm <- tune.svm(label~., data=dat_train, kernel='polynomial', degree=3, cost=10^(0:2), gamma=c(0.003,0.005,0.007), tunecontrol=tune.control(cross = 5))
   summary(tune_svm)
 }
 ```
@@ -217,7 +217,7 @@ if(run.tune.svm){
 ```{r}
 if(run.svm){
   
-  train_result_svm <- svm_train(dat_train, kernel='polynomial', degree=3, cost=10, gamma=0.005, class.weights=c('0'=1, '1'=4))
+  train_result_svm <- svm_train(dat_train, kernel='polynomial', degree=3, cost=10, gamma=0.005)
   model_svm <- train_result_svm[[1]]
   train_time_svm <- train_result_svm[[2]]
   save(model_svm, file="../output/model_svm.RData")

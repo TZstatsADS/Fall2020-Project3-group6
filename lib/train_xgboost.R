@@ -4,8 +4,11 @@
 
 xgb_train <- function(dat_train, para){
   
-  train_mat <- xgb.DMatrix(data=as.matrix(dat_train[, -6007]), label=as.numeric(dat_train$label)-1)
-  tm.train_xgb <- system.time(xgb.fit <- xgb.train(data = train_mat, params=para, nrounds=300))
+  weight <- sum(dat_train$label==0)/sum(dat_train$label==1)
+  
+  train_mat <- xgb.DMatrix(data=as.matrix(dat_train[, -ncol(dat_train)]), label=as.numeric(dat_train$label)-1)
+  tm.train_xgb <- system.time(xgb.fit <- xgb.train(data = train_mat, params=para, 
+                                                   scale_pos_weight=weight, nrounds=300))
   return(list(xgb.fit, tm.train_xgb))
 }
 
