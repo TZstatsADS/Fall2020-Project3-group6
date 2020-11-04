@@ -17,4 +17,10 @@ Team members: Mengyao He, Qinzhe Hu, Yiqi Lei, Yuwei Tong, Jiaqi Yuan
 
 Summary: In this project, we developed an advanced model and improved the classification accuracy for images of emotion to 84.2%
 
-[Contribution Statement] AB, CD, EF and GH designed the study. AB and CD developed baseline classification model for evaluation. EF and GH explored feature engineering for improving the baseline model. AB, EF and GH discussed and designed the model evaluation protocol. CD carried out the computation for model evaluation. All team members contributed to the GitHub repository and prepared the presentation. All team members approve our work presented in our GitHub repository including this contribution statement.
+[Contribution Statement] All of us contributed design of the study and participate all the stages of this project. All team members contributed to the GitHub repository and prepared the presentation. All team members approve our work presented in our GitHub repository including this contribution statement.
+
++ Mengyao He: Worked on feature selection, Neural Network, and Random Forest. Tested the feature selection performance on Random Forest. Wrote project summary.
++ Qinzhe Hu: 
++ Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
++ Yuwei Tong: presenter. Worked on XGBoost model and SVM model, tested the feature selection performance on XGBoost model, collaborated on writing the main file (including the prediction part) with Yiqi.
++ Jiaqi Yuan:  
