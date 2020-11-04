@@ -91,20 +91,22 @@ rf_test_time
 
 # Random Forest with Lasso------------------------------------
 load("../output/fit_train.RData")
-a = as.matrix(coef(fit_train))
 selected_feature = rownames(coef(fit_train) != 0.0)[coef(fit_train)[,1]!= 0][-1]
-data_lasso  = dat_train_rescale[,selected_feature]
-data_lasso$label=  dat_train[,6007]
+lasso_feature_train  = dat_train_rescale[,selected_feature]
+lasso_feature_train$label=  dat_train[,6007]
 
-data_lasso_test  = dat_test_rescale[,selected_feature]
-data_lasso_test$label=  dat_test[,6007]
+lasso_feature_test  = dat_test_rescale[,selected_feature]
+lasso_feature_test$label=  dat_test[,6007]
+save(lasso_feature_train, file="../output/lasso_feature_train.RData")
+save(lasso_feature_test, file="../output/lasso_feature_test.RData")
 
-rf_train_time <- system.time(rf_fit <- randomForest(label~.,data=data_lasso,importance = TRUE))
--which(colnames(data_lasso_test) %in% c('label'))
-rf_test_time <- system.time(yhat.rf <- predict(rf_fit,newdata = data_lasso_test[,-which(colnames(data_lasso_test) %in% c('label'))]))
-mean(yhat.rf == data_lasso_test[,which(colnames(data_lasso_test) %in% c('label'))])
 
-tpr.fpr <- roc(as.numeric(yhat.rf)-1,as.numeric(data_lasso_test[,1])-1,plot=TRUE)
+rf_train_time <- system.time(rf_fit <- randomForest(label~.,data=lasso_feature_train,importance = TRUE))
+-which(colnames(lasso_feature_test) %in% c('label'))
+rf_test_time <- system.time(yhat.rf <- predict(rf_fit,newdata = lasso_feature_test[,-which(colnames(lasso_feature_test) %in% c('label'))]))
+mean(yhat.rf == lasso_feature_test[,which(colnames(lasso_feature_test) %in% c('label'))])
+
+tpr.fpr <- roc(as.numeric(yhat.rf)-1,as.numeric(lasso_feature_test[,1])-1,plot=TRUE)
 Auc <- auc(tpr.fpr)
 
 Auc
