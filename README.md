@@ -20,7 +20,7 @@ Term: Fall 2020
 
 + Mengyao He: Worked on featue selection, Neural Network, and Random Forest.
 + Qinzhe Hu: 
-+ Yiqi Lei: Did the baseline model, collaborated on writing the main file (including final training and prediction part) with Yuwei. 
++ Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
 + Yuwei Tong:  
 + Jiaqi Yuan:  
 	
