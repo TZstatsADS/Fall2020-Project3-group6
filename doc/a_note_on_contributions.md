@@ -23,4 +23,4 @@ Summary: In this project, we developed an advanced model and improved the classi
 + Qinzhe Hu: 
 + Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
 + Yuwei Tong: presenter. Worked on XGBoost model and SVM model, tested the feature selection performance on XGBoost model, collaborated on writing the main file (including the prediction part) with Yiqi.
-+ Jiaqi Yuan:  
++ Jiaqi Yuan: Conducted feature selection with Mengyao; constructed the LDA model and evaluated the model performance
