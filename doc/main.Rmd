@@ -650,30 +650,6 @@ if(run.pred){
 pred_info<-pred_info%>%mutate(Advanced=final_pred_xgb)
 ```
 
-* evaluation
-```{r}
-## reweight the test data to represent a balanced label distribution
-
-if(run.pred){
-  
-  pred_accuracy_xgb = mean(pred_info$label == final_pred_xgb)
-  
-  label_pred_data <- as.numeric(pred_info$label)
-  weight_pred <- rep(NA, length(label_pred_data))
-  for (v in unique(label_pred_data)){
-    weight_pred[label_pred_data == v] = 0.5 * length(label_pred_data) / length(label_pred_data[label_pred_data == v])
-  }
-
-  tpr.fpr <- WeightedROC(final_pred_xgb, label_pred_data, weight_pred)
-  pred_auc <- WeightedAUC(tpr.fpr)
-  
-  cat("The accuracy of xgb model is:", pred_accuracy_xgb*100, "%.\n")
-  cat("The AUC of xgb model is:", pred_auc, ".\n")
-  
-}
-
-```
-
 ### Summarize Running Time
 
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 

@@ -4,7 +4,8 @@
 
 xgb_test = function(model, dat_test){
   
-  test_mat <- xgb.DMatrix(data=as.matrix(dat_test[, -ncol(dat_test)]), label=as.numeric(dat_test$label)-1)
+  test_mat <- xgb.DMatrix(data=as.matrix(dat_test[, -which(colnames(dat_test) %in% c('label'))]), 
+                          label=as.numeric(dat_test$label)-1)
   tm.test <-  system.time(pred_xgb <- predict(object = model, newdata = test_mat))
   return(list(pred_xgb,tm.test))
   

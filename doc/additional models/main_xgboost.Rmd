@@ -68,7 +68,7 @@ library(xgboost)
 ### Step 0 set work directories
 ```{r wkdir, eval=FALSE}
 set.seed(2020)
-# setwd("~/Project3-FacialEmotionRecognition/doc")
+setwd("~/Documents/Columbia/2020Fall/Applied Data Science/Project 3/Fall2020-Project3-group6")
 # here replace it with your own path or manually set it in RStudio to where this rmd file is located. 
 # use relative path for reproducibility
 ```
@@ -100,7 +100,8 @@ run.feature.train <- TRUE # process features for training set
 run.test <- TRUE # run evaluation on an independent test set
 run.feature.test <- TRUE # process features for test set
 
-run.feature.forward <- TRUE # run forward stepwise selection on features
+run.feature.forward <- FALSE # run forward stepwise selection on features
+run.feature.pca <- FALSE
 
 run.baseline <- FALSE
 run.xgboost <- TRUE
@@ -179,8 +180,13 @@ if(run.feature.test){
 
 if(run.feature.forward){
   load(file="../output/forward_feature.RData")
-  dat_train <- dat_train[,c(forward_feature,'label')]
-  dat_test <- dat_test[,c(forward_feature,'label')]
+  dat_train_forward <- dat_train[,c(forward_feature,'label')]
+  dat_test_forward <- dat_test[,c(forward_feature,'label')]
+}
+
+if(run.feature.pca){
+  load(file="../output/pca_feature_train.RData")
+  load(file="../output/pca_feature_test.RData")
 }
 ```
 
@@ -251,6 +257,20 @@ if(run.xgboost){
 ```
 
 
+```{r feature extraction}
+if(run.feature.forward){
+  train_result_forward <- xgb_train(dat_train_forward, para)
+  model_forward <- train_result_forward[[1]]
+  train_time_forward <- train_result_forward[[2]]
+}
+
+if(run.feature.pca){
+  train_result_pca <- xgb_train(pca_feature_train, para)
+  model_pca <- train_result_pca[[1]]
+  train_time_pca <- train_result_pca[[2]]
+}
+```
+
 
 ### Step 5: Run test on test images
 
@@ -268,7 +288,21 @@ if(run.xgboost){
 }
 ```
 
+```{r}
+if(run.feature.forward){
+  test_result_forward = xgb_test(model_forward, dat_test_forward)
+  pred_forward = test_result_forward[[1]]
+  pred_forward = ifelse(pred_forward>0.5, 1, 0)
+  test_time_forward = test_result_forward[[2]]
+}
 
+if(run.feature.pca){
+  test_result_pca = xgb_test(model_pca, pca_feature_test)
+  pred_pca = test_result_pca[[1]]
+  pred_pca = ifelse(pred_pca>0.5, 1, 0)
+  test_time_pca = test_result_pca[[2]]
+}
+```
 
 * evaluation
 ```{r}
@@ -294,6 +328,40 @@ if(run.xgboost){
 
 ```
 
+```{r}
+if(run.feature.forward){
+  accuracy_forward = mean(dat_test_forward$label == pred_forward)
+  
+  label_test <- as.numeric(dat_test_forward$label)-1
+  weight_test <- rep(NA, length(label_test))
+  for (v in unique(label_test)){
+    weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+  }
+
+  tpr.fpr <- WeightedROC(pred_forward, label_test, weight_test)
+  auc <- WeightedAUC(tpr.fpr)
+  
+  cat("The accuracy of xgb model with forward stepwise selection is:", accuracy_forward*100, "%.\n")
+  cat("The AUC of xgb model with forward stepwise selection is:", auc, ".\n")
+}
+
+if(run.feature.pca){
+  accuracy_pca = mean(pca_feature_test$label == pred_pca)
+  
+  label_test <- as.numeric(pca_feature_test$label)-1
+  weight_test <- rep(NA, length(label_test))
+  for (v in unique(label_test)){
+    weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+  }
+
+  tpr.fpr <- WeightedROC(pred_pca, label_test, weight_test)
+  auc <- WeightedAUC(tpr.fpr)
+  
+  cat("The accuracy of xgb model with PCA selection is:", accuracy_pca*100, "%.\n")
+  cat("The AUC of xgb model with PCA selection is:", auc, ".\n")
+}
+```
+
 ### Summarize Running Time
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
 ```{r running_time}
@@ -302,6 +370,18 @@ if(run.xgboost){
   cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
   cat("Time for training model=", train_time_xgb[1], "s \n") 
   cat("Time for testing model=", test_time_xgb[1], "s \n")
+}
+```
+
+```{r}
+if(run.feature.forward){
+  cat("Time for training model=", train_time_forward[1], "s \n") 
+  cat("Time for testing model=", test_time_forward[1], "s \n")
+}
+
+if(run.feature.pca){
+  cat("Time for training model=", train_time_pca[1], "s \n") 
+  cat("Time for testing model=", test_time_pca[1], "s \n")
 }
 ```
 
