@@ -22,7 +22,7 @@ Term: Fall 2020
 + Qinzhe Hu: Worked on Naive Bayes model, comparing the AUC and accuracy with other models.
 + Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
 + Yuwei Tong: presenter. Worked on XGBoost model and SVM model, tested the feature selection performance on XGBoost model, collaborated on writing the main file (including the prediction part) with Yiqi.
-+ Jiaqi Yuan: Conducted feature selection with Mengyao; constructed the LDA model and evaluated the model performance
++ Jiaqi Yuan: Worked on feature selection with Mengyao; constructed the LDA model and evaluated the model performance
 	
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
