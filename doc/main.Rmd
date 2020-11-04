@@ -73,7 +73,7 @@ library(tidyverse)
 ### Step 0 set work directories
 ```{r wkdir, eval=FALSE}
 set.seed(2020)
-# setwd("~/Project3-FacialEmotionRecognition/doc")
+setwd("~/Documents/Columbia/2020Fall/Applied Data Science/Project 3/Fall2020-Project3-group6")
 # here replace it with your own path or manually set it in RStudio to where this rmd file is located. 
 # use relative path for reproducibility
 ```
@@ -107,6 +107,8 @@ run.feature.test <- TRUE # process features for test set
 
 run.baseline <- TRUE # run baseline model
 run.xgboost <- TRUE # run xgboost model
+
+run.pred <- FALSE
 ```
 
 Using cross-validation or independent test set evaluation, we compare the performance of models with different specifications. In this part, we tune parameters n.trees (total number of trees) and shrinkage (learning rate) for boosted decision stumps (Gradient Boosting Machine). And tune parameters eta (learning rate) and colsample_bytree (subsample ratio of columns when constructing each tree) for xgboost model (eXtreme Gradient Boosting Training).
@@ -116,7 +118,7 @@ Using cross-validation or independent test set evaluation, we compare the perfor
 n.trees  <- c(40,50,60,70) #40-70
 shrinkage <- c(0.01,0.05,0.1,0.15) #0.01-1
 
-model_labels = paste("GBM with n.trees =", n.trees,"and shrinkage =",shrinkage) 
+#model_labels = paste("GBM with n.trees =", n.trees,"and shrinkage =",shrinkage) 
 
 # xgboost parameters
 e <-c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5) # eta
@@ -226,7 +228,7 @@ feature_train = dat_train[, -6007]
 label_train = dat_train$label
 ```
 
-```{r}
+```{r,eval=FALSE}
 if(run.cv){
   
 mean.error_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
@@ -253,17 +255,20 @@ sd.AUC_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
       sd.AUC_cv[i,j]<-res_cv[4]
     }
   }
-
-save(res_cv, file="../output/res_cv.RData")
-
+save(mean.error_cv, file="../output/mean.error_cv.RData")
+save(sd.error_cv, file="../output/sd.error_cv.RData")
+save(mean.AUC_cv, file="../output/mean.AUC_cv.RData")
+save(sd.AUC_cv, file="../output/sd.AUC_cv.RData")
 }else{
-load("../output/res_cv.RData")
+  load("../output/mean.error_cv.RData")
+  load("../output/sd.error_cv.RData")
+  load("../output/mean.AUC_cv.RData")
+  load("../output/sd.AUC_cv.RData")
   }
-
 ```
 
-Visualize cross-validation results. 
-```{r cv_vis}
+
+```{r, eval=FALSE}
 df.mean.error<-data.frame(mean.error_cv)%>%
   setNames(shrinkage)%>%
   mutate(n.trees=n.trees)%>%
@@ -287,9 +292,14 @@ df.sd.AUC<-data.frame(sd.AUC_cv)%>%
 res_cvvv<-df.mean.error%>%mutate(sd.error=df.sd.error$sd.error,
                                  mean.AUC=df.mean.AUC$mean.AUC,
                                  sd.AUC=df.sd.AUC$sd.AUC)
+
+save(res_cvvv, file="../output/res_cvvv.RData")
 ```
 
+Visualize cross-validation results. 
 ```{r cv_vis}
+load("../output/res_cvvv.RData")
+
 if(run.cv){
   p1 <- res_cvvv%>%
     ggplot(aes(x = n.trees, y = mean.error,
@@ -321,7 +331,8 @@ n.trees_best
 shrinkage_best
 ```
 
-* Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are n.trees=0.01 and shrinkage=40.
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are n.trees=`r n.trees_best` and shrinkage=`r shrinkage_best`.
+
 ```{r final_train}
 # training weights
 weight_train <- rep(NA, length(label_train))
@@ -378,64 +389,97 @@ if(run.cv){
     }
   }
   
-  save(mean.error_cv_xgb, file="../output/res_cv_xgb.RData")
-  save(sd.error_cv_xgb, file="../output/res_cv_xgb.RData")
-  save(mean.AUC_cv_xgb, file="../output/res_cv_xgb.RData")
-  save(sd.AUC_cv_xgb, file="../output/res_cv_xgb.RData")
+  save(mean.error_cv_xgb, file="../output/mean.error_cv_xgb.RData")
+  save(sd.error_cv_xgb, file="../output/sd.error_cv_xgb.RData")
+  save(mean.AUC_cv_xgb, file="../output/mean.AUC_cv_xgb.RData")
+  save(sd.AUC_cv_xgb, file="../output/sd.AUC_cv_xgb.RData")
 
 }else{
-load("../output/res_cv_xgb.RData")
+  load("../output/mean.error_cv_xgb.RData")
+  load("../output/sd.error_cv_xgb.RData")
+  load("../output/mean.AUC_cv_xgb.RData")
+  load("../output/sd.AUC_cv_xgb.RData")
 }
 ```
 
 Visualize cross-validation results. 
 
 ```{r cv_vis}
+if(run.cv){
 df.mean.error_xgb <- data.frame(mean.error_cv_xgb)%>%
   setNames(c)%>%
   mutate(eta=e)%>%
-  pivot_longer(c(e),names_to = "colsample_bytree",values_to = "mean.error")
+  pivot_longer(c(-eta),names_to = "colsample_bytree",values_to = "mean.error")
 
 df.sd.error_xgb <- data.frame(sd.error_cv_xgb)%>%
-  setNames(e)%>%
-  mutate(colsample_bytree=c)%>%
-  pivot_longer(c(-c),names_to = "eta",values_to = "sd.error")
+  setNames(c)%>%
+  mutate(eta=e)%>%
+  pivot_longer(c(-eta),names_to = "colsample_bytree",values_to = "sd.error")
 
 df.mean.AUC_xgb <- data.frame(mean.AUC_cv_xgb)%>%
-  setNames(e)%>%
-  mutate(colsample_bytree=c)%>%
-  pivot_longer(c(-c),names_to = "eta",values_to = "mean.AUC")
+  setNames(c)%>%
+  mutate(eta=e)%>%
+  pivot_longer(c(-eta),names_to = "colsample_bytree",values_to = "mean.AUC")
 
 df.sd.AUC_xgb <- data.frame(sd.AUC_cv_xgb)%>%
-  setNames(e)%>%
-  mutate(colsample_bytree=c)%>%
-  pivot_longer(c(-c),names_to = "eta",values_to = "sd.AUC")
+  setNames(c)%>%
+  mutate(eta=e)%>%
+  pivot_longer(c(-eta),names_to = "colsample_bytree",values_to = "sd.AUC")
 
 df.res_cv_xgb <- df.mean.error_xgb%>%mutate(sd.error=df.sd.error_xgb$sd.error,
                                  mean.AUC=df.mean.AUC_xgb$mean.AUC,
                                  sd.AUC=df.sd.AUC_xgb$sd.AUC)
+
+save(df.res_cv_xgb, file="../output/res_cv_xgb.RData")
+}else{
+  load("../output/res_cv_xgb.RData")
+}
 ```
 
 ```{r cv_vis}
 if(run.cv){
   p1 <- df.res_cv_xgb%>%
-    ggplot(aes(x = cols, y = mean.error,
+    ggplot(aes(x = eta, y = mean.error,
                ymin = mean.error - sd.error, ymax = mean.error + sd.error)) + 
     geom_crossbar() +
-    facet_wrap(~shrinkage)+
+    facet_wrap(~colsample_bytree)+
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
-  p2 <- res_cvvv %>% 
-    ggplot(aes(x = as.factor(n.trees), y = mean.AUC,
+  p2 <- df.res_cv_xgb %>% 
+    ggplot(aes(x = as.factor(eta), y = mean.AUC,
                ymin = mean.AUC - sd.AUC, ymax = mean.AUC + sd.AUC)) + 
     geom_crossbar() +
-    facet_wrap(~shrinkage)+
+    facet_wrap(~colsample_bytree)+
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
   print(p1)
   print(p2)
 }
 
+```
+
+* Choose the "best" parameter value
+```{r best_model}
+eta_best <- as.numeric(df.res_cv_xgb[which.min(df.res_cv_xgb$mean.error),1])
+colsample_bytree_best <- as.numeric(df.res_cv_xgb[which.min(df.res_cv_xgb$mean.error),2])
+
+eta_best
+colsample_bytree_best
+```
+
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are eta=`r eta_best` and colsample_bytree=`r colsample_bytree_best`.
+
+```{r final_train}
+
+para <- list(objective="binary:logistic", eta=eta_best, max_depth=6, min_child_weight=1,
+            colsample_bytree=colsample_bytree_best)
+if(run.xgboost){
+  train_result_xgb <- xgb_train(dat_train, para)
+  model_xgb <- train_result_xgb[[1]]
+  train_time_xgb <- train_result_xgb[[2]]
+  save(model_xgb, file="../output/model_xgb.RData")
+  save(train_time_xgb, file="../output/train_time_xgb.RData")
+}
 ```
 
 ### Step 5: Run test on test images
@@ -459,7 +503,6 @@ if(run.test){
 }
 ```
 
-
 * evaluation
 ```{r}
 ## reweight the test data to represent a balanced label distribution
@@ -476,9 +519,8 @@ accu <- mean(label_pred == label_test)
 tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
 auc <- WeightedAUC(tpr.fpr)
 
-cat("The accuracy of model:", model_labels[which.min(res_cvvv$mean.error)], "is", accu*100, "%.\n")
-cat("The AUC of model:", model_labels[which.min(res_cvvv$mean.error)], "is", auc, ".\n")
-
+cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", accu*100, "%.\n")
+cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", auc, ".\n")
 ```
 
 ### Summarize Running Time
@@ -492,7 +534,133 @@ cat("Time for testing model=", tm_test[1], "s \n")
 
 #### (b). xgboost (advanced model)
 
+```{r test}
+if(run.xgboost){
+  load("../output/model_xgb.RData")
+  test_result_xgb = xgb_test(model_xgb, dat_test)
+  pred_xgb = test_result_xgb[[1]]
+  pred_xgb = ifelse(pred_xgb>0.5, 1, 0)
+  test_time_xgb = test_result_xgb[[2]]
+}
+```
 
+* evaluation
+```{r}
+## reweight the test data to represent a balanced label distribution
+
+if(run.xgboost){
+  
+  accuracy_xgb = mean(dat_test$label == pred_xgb)
+  
+  label_test <- as.numeric(dat_test$label)-1
+  weight_test <- rep(NA, length(label_test))
+  for (v in unique(label_test)){
+    weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+  }
+
+  tpr.fpr <- WeightedROC(pred_xgb, label_test, weight_test)
+  auc <- WeightedAUC(tpr.fpr)
+  
+  cat("The accuracy of xgb model is:", accuracy_xgb*100, "%.\n")
+  cat("The AUC of xgb model is:", auc, ".\n")
+  
+}
+
+```
+
+### Summarize Running Time
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+```{r running_time}
+if(run.xgboost){
+  cat("Time for constructing training features=", tm_feature_train[1], "s \n")
+  cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
+  cat("Time for training model=", train_time_xgb[1], "s \n") 
+  cat("Time for testing model=", test_time_xgb[1], "s \n")
+}
+```
+
+### Step 6: Prediction
+
+```{r import test data}
+pred_dir <- "../data/test_set_predict/" # This will be modified for different data sets.
+pred_image_dir <- paste(pred_dir, "images/", sep="")
+pred_pt_dir <- paste(pred_dir,  "points/", sep="")
+pred_label_path <- paste(pred_dir, "label_prediction.csv", sep="")
+
+pred_info <- read.csv(pred_label_path)
+pred_n <- nrow(pred_info)
+pred_idx <- pred_info$Index
+
+pred_n_files <- length(list.files(pred_image_dir))
+
+#load fiducial points
+pred_fiducial_pt_list <- lapply(1:pred_n_files, readMat.matrix) 
+
+save(pred_fiducial_pt_list, file="../output/pred_fiducial_pt_list.RData")
+
+source("../lib/feature.R")
+
+tm_feature_pred <- NA
+if(run.feature.test){
+  tm_feature_pred <- system.time(dat_pred <- feature(pred_fiducial_pt_list, pred_idx))
+  save(dat_pred, file="../output/feature_pred.RData")
+}else{
+  load(file="../output/feature_pred.RData")
+}
+
+feature_pred <- as.matrix(dat_pred[, -6007])
+```
+
+
+#### (a). GBM (baseline model)
+```{r predict}
+tm_pred = NA
+
+if(run.pred){
+  load(file="../output/fit_train.RData")
+  tm_pred <- system.time(
+    {label_pred <- as.integer(test(fit_train,feature_pred,
+                                   n.trees_best,shrinkage_best, 
+                                   pred.type = 'link'))})
+}
+
+pred_info<-pred_info%>%mutate(Baseline=label_pred)
+```
+
+### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+```{r running_time}
+cat("Predicting time of baseline model=", tm_pred[1], "s \n")
+```
+
+
+#### (b). xgboost (advanced model)
+
+```{r predict}
+
+if(run.pred){
+  load("../output/model_xgb.RData")
+  pred_result_xgb = xgb_test(model_xgb, dat_pred)
+  final_pred_xgb = pred_result_xgb[[1]]
+  final_pred_xgb = ifelse(final_pred_xgb>0.5, 1, 0)
+  pred_time_xgb = pred_result_xgb[[2]]
+}
+
+pred_info<-pred_info%>%mutate(Advanced=final_pred_xgb)
+```
+
+### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+```{r running_time}
+cat("Predicting time of advanced model=", pred_time_xgb[1], "s \n")
+```
+
+
+```{r}
+write.csv(pred_info, file="../doc/label_prediction.csv")
+```
 
 ###Reference
 - Du, S., Tao, Y., & Martinez, A. M. (2014). Compound facial expressions of emotion. Proceedings of the National Academy of Sciences, 111(15), E1454-E1462.

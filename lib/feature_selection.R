@@ -20,7 +20,7 @@ library(randomForest)
 #getwd()
 #setwd("~/Documents/GitHub/Fall2020-Project3-group6/lib/")
 load("../output/feature_train.RData")
-
+load("../output/forward_feature.RData")
 # Best Subset Selection----------------------------------------------------------------
 # best_fit <- regsubsets(label ~ ., data = dat_train)
 
@@ -61,9 +61,12 @@ length(lasso_feature[lasso_feature != 0])
 save(lasso_feature, file="../output/lasso_feature.RData")
 
 # PCA-------------------------------------------------------------------------
-pca <- preProcess(x=dat_train,method="pca",thresh=0.95)
-pca_feature <- predict(pca,dat_train[,-6007])
-save(pca_feature, file="../output/pca_feature.RData")
+pca <- preProcess(x=dat_train[,-6007],method="pca",thresh=0.95)
+pca_feature_train <- predict(pca,dat_train)
+save(pca_feature_train, file="../output/pca_feature_train.RData")
+pca_feature_test <- predict(pca,dat_test)
+save(pca_feature_test, file="../output/pca_feature_test.RData")
+
 
 # Random Forest-------------------------------------------------------------------------
 rf_fit = randomForest(label~.,data=dat_train,importance = TRUE)
