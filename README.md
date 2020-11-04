@@ -19,7 +19,7 @@ Term: Fall 2020
 **Contribution statement**: ([details](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. Wrote project summary.
 
 + Mengyao He: Worked on feature selection, Neural Network, and Random Forest. Tested the feature selection performance on Random Forest.
-+ Qinzhe Hu: 
++ Qinzhe Hu: Worked on Naive Bayes model, comparing the AUC and accuracy with other models.
 + Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
 + Yuwei Tong: presenter. Worked on XGBoost model and SVM model, tested the feature selection performance on XGBoost model, collaborated on writing the main file (including the prediction part) with Yiqi.
 + Jiaqi Yuan:  
