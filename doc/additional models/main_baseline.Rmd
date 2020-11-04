@@ -227,7 +227,7 @@ sd.AUC_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
     for (j in 1:length(shrinkage)){
     cat("shrinkage = ", shrinkage[j], "\n")
       
-      res_cv<- cv.function(feature_train, 
+      res_cv<- cv_baseline(feature_train, 
                               label_train, 
                               K, 
                               n.trees[i],
@@ -330,11 +330,11 @@ for (v in unique(label_train)){
 }
 
 if (sample.reweight){
-  tm_train <- system.time(fit_train <- train(feature_train,label_train,
+  tm_train <- system.time(fit_train <- train_baseline(feature_train,label_train,
                                              w = weight_train,
                                              n.trees_best,shrinkage_best))
 } else {
-  tm_train <- system.time(fit_train <- train(feature_train,label_train,
+  tm_train <- system.time(fit_train <- train_baseline(feature_train,label_train,
                                              w=NULL,
                                              n.trees_best,shrinkage_best))
 }
@@ -349,11 +349,11 @@ feature_test <- as.matrix(dat_test[, -6007])
 if(run.test){
   load(file="../output/fit_train.RData")
   tm_test <- system.time(
-    {label_pred <- as.integer(test(fit_train,feature_test,
+    {label_pred <- as.integer(test_baseline(fit_train,feature_test,
                                    n.trees_best,shrinkage_best, 
                                    pred.type = 'link'));
     
-    prob_pred <- test(fit_train, feature_test, 
+    prob_pred <- test_baseline(fit_train, feature_test, 
                       n.trees_best,shrinkage_best,
                       pred.type = 'response')})
 }
