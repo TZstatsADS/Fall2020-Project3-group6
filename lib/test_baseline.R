@@ -2,7 +2,7 @@
 ### Make predictions with test features ###
 ###########################################################
 
-test <- function(model, features,n.trees,shrinkage,pred.type){
+test_baseline <- function(model, features,n.trees,shrinkage,pred.type){
   res <- predict(model, newdata = data.frame(features),n.trees,shrinkage,type=pred.type)
   pred=apply(res,1,which.max)
   #return(res)
