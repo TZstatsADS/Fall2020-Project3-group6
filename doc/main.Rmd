@@ -1,16 +1,18 @@
 ---
 title: "Main"
-author: "Chengliang Tang, Yujie Wang, Diane Lu, Tian Zheng"
+author: "Yuwei Tong, Yiqi Lei, Mengyao He, Jiaqi Yuan, Qinzhe Hu"
 output:
   pdf_document: default
   html_notebook: default
+  html_document:
+    df_print: paged
 ---
 
 In your final repo, there should be an R markdown file that organizes **all computational steps** for evaluating your proposed Facial Expression Recognition framework. 
 
 This file is currently a template for running evaluation experiments. You should update it according to your codes but following precisely the same structure. 
 
-```{r message=FALSE}
+```{r, message=FALSE,warning=FALSE}
 if(!require("EBImage")){
   install.packages("BiocManager")
   BiocManager::install("EBImage")
@@ -73,9 +75,7 @@ library(tidyverse)
 ### Step 0 set work directories
 ```{r wkdir, eval=FALSE}
 set.seed(2020)
-setwd("~/Documents/Columbia/2020Fall/Applied Data Science/Project 3/Fall2020-Project3-group6")
-# here replace it with your own path or manually set it in RStudio to where this rmd file is located. 
-# use relative path for reproducibility
+setwd(getwd())
 ```
 
 Provide directories for training images. Training images and Training fiducial points will be in different subfolders. 
@@ -99,7 +99,7 @@ In this chunk, we have a set of controls for the evaluation experiments.
 
 ```{r exp_setup}
 run.cv <- FALSE # run cross-validation on the training set
-sample.reweight <- FALSE # run sample reweighting in model training
+sample.reweight <- TRUE # run sample reweighting in model training
 K <- 5  # number of CV folds
 run.feature.train <- TRUE # process features for training set
 run.test <- TRUE # run evaluation on an independent test set
@@ -108,7 +108,7 @@ run.feature.test <- TRUE # process features for test set
 run.baseline <- TRUE # run baseline model
 run.xgboost <- TRUE # run xgboost model
 
-run.pred <- FALSE
+run.pred <- TRUE
 ```
 
 Using cross-validation or independent test set evaluation, we compare the performance of models with different specifications. In this part, we tune parameters n.trees (total number of trees) and shrinkage (learning rate) for boosted decision stumps (Gradient Boosting Machine). And tune parameters eta (learning rate) and colsample_bytree (subsample ratio of columns when constructing each tree) for xgboost model (eXtreme Gradient Boosting Training).
@@ -214,7 +214,7 @@ Call the train model and test model from library.
 
 #### (a). GBM (baseline model)
 
-```{r loadlib}
+```{r load baseline lib}
 source("../lib/train_baseline.R") 
 source("../lib/test_baseline.R")
 source("../lib/cv_baseline.R")
@@ -224,8 +224,8 @@ source("../lib/cv_baseline.R")
 * Do model selection by choosing among different values of training model parameters.
 
 ```{r}
-feature_train = dat_train[, -6007]
-label_train = dat_train$label
+feature_train = as.matrix(dat_train[, -6007]) 
+label_train = as.integer(dat_train$label)
 ```
 
 ```{r,eval=FALSE}
@@ -242,7 +242,7 @@ sd.AUC_cv <- matrix(0, nrow = length(n.trees), ncol=length(shrinkage))
     for (j in 1:length(shrinkage)){
     cat("shrinkage = ", shrinkage[j], "\n")
       
-      res_cv<- cv.function(feature_train, 
+      res_cv<- cv_baseline(feature_train, 
                               label_train, 
                               K, 
                               n.trees[i],
@@ -297,10 +297,10 @@ save(res_cvvv, file="../output/res_cvvv.RData")
 ```
 
 Visualize cross-validation results. 
-```{r cv_vis}
+```{r cv_vis b}
 load("../output/res_cvvv.RData")
 
-if(run.cv){
+
   p1 <- res_cvvv%>%
     ggplot(aes(x = n.trees, y = mean.error,
                ymin = mean.error - sd.error, ymax = mean.error + sd.error)) + 
@@ -317,13 +317,13 @@ if(run.cv){
   
   print(p1)
   print(p2)
-}
+
 
 ```
 
 
 * Choose the "best" parameter value
-```{r best_model}
+```{r best model}
 n.trees_best <- as.numeric(res_cvvv[which.min(res_cvvv$mean.error),1])
 shrinkage_best <- as.numeric(res_cvvv[which.min(res_cvvv$mean.error),2])
 
@@ -333,7 +333,7 @@ shrinkage_best
 
 * Train the model with the entire training set using the selected model (model parameter) via cross-validation. The "best" parameters we got here are n.trees=`r n.trees_best` and shrinkage=`r shrinkage_best`.
 
-```{r final_train}
+```{r final train}
 # training weights
 weight_train <- rep(NA, length(label_train))
 for (v in unique(label_train)){
@@ -341,11 +341,11 @@ for (v in unique(label_train)){
 }
 
 if (sample.reweight){
-  tm_train <- system.time(fit_train <- train(feature_train,label_train,
+  tm_train <- system.time(fit_train <- train_baseline(feature_train,label_train,
                                              w = weight_train,
                                              n.trees_best,shrinkage_best))
 } else {
-  tm_train <- system.time(fit_train <- train(feature_train,label_train,
+  tm_train <- system.time(fit_train <- train_baseline(feature_train,label_train,
                                              w=NULL,
                                              n.trees_best,shrinkage_best))
 }
@@ -354,7 +354,7 @@ save(fit_train, file="../output/fit_train.RData")
 
 #### (b). xgboost (advanced model)
 
-```{r loadlib}
+```{r loadxgboost lib}
 source("../lib/train_xgboost.R") 
 source("../lib/test_xgboost.R")
 source("../lib/cv_xgboost.R")
@@ -404,7 +404,7 @@ if(run.cv){
 
 Visualize cross-validation results. 
 
-```{r cv_vis}
+```{r}
 if(run.cv){
 df.mean.error_xgb <- data.frame(mean.error_cv_xgb)%>%
   setNames(c)%>%
@@ -436,8 +436,8 @@ save(df.res_cv_xgb, file="../output/res_cv_xgb.RData")
 }
 ```
 
-```{r cv_vis}
-if(run.cv){
+```{r cv_vis x}
+
   p1 <- df.res_cv_xgb%>%
     ggplot(aes(x = eta, y = mean.error,
                ymin = mean.error - sd.error, ymax = mean.error + sd.error)) + 
@@ -454,7 +454,7 @@ if(run.cv){
   
   print(p1)
   print(p2)
-}
+
 
 ```
 
@@ -486,18 +486,18 @@ if(run.xgboost){
 
 #### (a). GBM (baseline model)
 
-```{r test}
+```{r test b}
 tm_test = NA
 feature_test <- as.matrix(dat_test[, -6007])
 
 if(run.test){
   load(file="../output/fit_train.RData")
   tm_test <- system.time(
-    {label_pred <- as.integer(test(fit_train,feature_test,
+    {label_pred <- as.integer(test_baseline(fit_train,feature_test,
                                    n.trees_best,shrinkage_best, 
                                    pred.type = 'link'));
     
-    prob_pred <- test(fit_train, feature_test, 
+    prob_pred <- test_baseline(fit_train, feature_test, 
                       n.trees_best,shrinkage_best,
                       pred.type = 'response')})
 }
@@ -520,12 +520,12 @@ tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
 auc <- WeightedAUC(tpr.fpr)
 
 cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", accu*100, "%.\n")
-cat("The accuracy of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", auc, ".\n")
+cat("The AUC of model: GBM with n.trees =", n.trees_best, "and shrinkage =",shrinkage_best,"is", auc, ".\n")
 ```
 
 ### Summarize Running Time
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
-```{r running_time}
+```{r running_time1}
 cat("Time for constructing training features=", tm_feature_train[1], "s \n")
 cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
 cat("Time for training model=", tm_train[1], "s \n") 
@@ -534,7 +534,7 @@ cat("Time for testing model=", tm_test[1], "s \n")
 
 #### (b). xgboost (advanced model)
 
-```{r test}
+```{r test x}
 if(run.xgboost){
   load("../output/model_xgb.RData")
   test_result_xgb = xgb_test(model_xgb, dat_test)
@@ -570,7 +570,7 @@ if(run.xgboost){
 
 ### Summarize Running Time
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
-```{r running_time}
+```{r running_time2}
 if(run.xgboost){
   cat("Time for constructing training features=", tm_feature_train[1], "s \n")
   cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
@@ -582,6 +582,7 @@ if(run.xgboost){
 ### Step 6: Prediction
 
 ```{r import test data}
+if(run.pred){
 pred_dir <- "../data/test_set_predict/" # This will be modified for different data sets.
 pred_image_dir <- paste(pred_dir, "images/", sep="")
 pred_pt_dir <- paste(pred_dir,  "points/", sep="")
@@ -609,35 +610,37 @@ if(run.feature.test){
 }
 
 feature_pred <- as.matrix(dat_pred[, -6007])
+}
 ```
 
 
 #### (a). GBM (baseline model)
-```{r predict}
+```{r predict b}
 tm_pred = NA
 
 if(run.pred){
   load(file="../output/fit_train.RData")
   tm_pred <- system.time(
-    {label_pred <- as.integer(test(fit_train,feature_pred,
+    {label_pred <- as.integer(test_baseline(fit_train,feature_pred,
                                    n.trees_best,shrinkage_best, 
-                                   pred.type = 'link'))})
+                                   pred.type = 'link'))-1})
+  pred_info<-pred_info%>%mutate(Baseline=label_pred)
 }
 
-pred_info<-pred_info%>%mutate(Baseline=label_pred)
 ```
 
 ### Summarize Running Time
 
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
-```{r running_time}
-cat("Predicting time of baseline model=", tm_pred[1], "s \n")
+```{r running_time3}
+if(run.pred){
+cat("Predicting time of baseline model=", tm_pred[1], "s \n")}
 ```
 
 
 #### (b). xgboost (advanced model)
 
-```{r predict}
+```{r predict x}
 
 if(run.pred){
   load("../output/model_xgb.RData")
@@ -645,21 +648,22 @@ if(run.pred){
   final_pred_xgb = pred_result_xgb[[1]]
   final_pred_xgb = ifelse(final_pred_xgb>0.5, 1, 0)
   pred_time_xgb = pred_result_xgb[[2]]
+  pred_info<-pred_info%>%mutate(Advanced=final_pred_xgb)
 }
 
-pred_info<-pred_info%>%mutate(Advanced=final_pred_xgb)
 ```
 
 ### Summarize Running Time
 
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
-```{r running_time}
-cat("Predicting time of advanced model=", pred_time_xgb[1], "s \n")
+```{r running_time4}
+if(run.pred){
+cat("Predicting time of advanced model=", pred_time_xgb[1], "s \n")}
 ```
 
 
 ```{r}
-write.csv(pred_info, file="../doc/label_prediction.csv")
+if(run.pred){write.csv(pred_info, file="../doc/label_prediction.csv")}
 ```
 
 ###Reference

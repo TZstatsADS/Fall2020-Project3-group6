@@ -14,14 +14,14 @@ Term: Fall 2020
 	+ Yuwei Tong
 	+ Jiaqi Yuan
 
-+ Project summary: In this project, we created a classification engine for facial emotion recognition. The goal of this project is to accurately classify an emotion shown from a facial image is single emotion or composed emotion. We started from a baseline model using the Gradient Boosting Machine. There are 6006 features in total, so we did feature selection, including forward stepwise selection, Lasso, and PCA, to reduce the dimention of the dataset. Then, we tried several different models, including Native Bayes, Random Forest, LDA, Xgboost, SVM, DNN. Models were evaluated in terms of accuracy and the area under the Receiver Operating Characteristic curve (AUC). Compare the results of each model, we chose Xgboost as our advanced model. 
++ Project summary: In this project, we created a classification engine for facial emotion recognition. The goal of this project is to accurately classify an emotion shown from a facial image is simple emotion or compound emotion. We started from a baseline model using the Gradient Boosting Machine and the accuracy was 73.3%. There are 6006 features in total, so we did feature selection, including forward stepwise selection, Lasso, and PCA, to reduce the dimention of the dataset. Then, we tried several different models, including Native Bayes, Random Forest, LDA, XGBoost, SVM, DNN. Models were evaluated in terms of accuracy and the area under the Receiver Operating Characteristic curve (AUC). Compare the results of each model, we chose Xgboost as our advanced model and improved the accuracy to 84.2%.
 	
 **Contribution statement**: ([details](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
-+ Mengyao He: Worked on featue selection, Neural Network, and Random Forest.
++ Mengyao He: Worked on feature selection, Neural Network, and Random Forest.
 + Qinzhe Hu: 
 + Yiqi Lei: Did the baseline model, collaborated on writing the main file (including the prediction part) with Yuwei. 
-+ Yuwei Tong:  
++ Yuwei Tong: presenter. Worked on XGBoost model and SVM model, tested the feature selection performance on XGBoost model, collaborated on writing the main file (including the prediction part) with Yiqi.
 + Jiaqi Yuan:  
 	
 

@@ -75,7 +75,7 @@ setwd("~/Documents/Columbia/2020Fall/Applied Data Science/Project 3/Fall2020-Pro
 
 Provide directories for training images. Training images and Training fiducial points will be in different subfolders. 
 ```{r}
-train_dir <- "~/Documents/Columbia/2020Fall/Applied Data Science/Project 3/train_set/" # This will be modified for different data sets.
+train_dir <- "../data/train_set/" # This will be modified for different data sets.
 train_image_dir <- paste(train_dir, "images/", sep="")
 train_pt_dir <- paste(train_dir,  "points/", sep="")
 train_label_path <- paste(train_dir, "label.csv", sep="") 
@@ -102,6 +102,7 @@ run.feature.test <- TRUE # process features for test set
 
 run.feature.forward <- FALSE # run forward stepwise selection on features
 run.feature.pca <- FALSE
+run.feature.lasso <- TRUE
 
 run.baseline <- FALSE
 run.xgboost <- TRUE
@@ -188,6 +189,11 @@ if(run.feature.pca){
   load(file="../output/pca_feature_train.RData")
   load(file="../output/pca_feature_test.RData")
 }
+
+if(run.feature.lasso){
+  load(file="../output/lasso_feature_train.RData")
+  load(file="../output/lasso_feature_test.RData")
+}
 ```
 
 ### Step 4: Train a classification model with training features and responses
@@ -269,6 +275,12 @@ if(run.feature.pca){
   model_pca <- train_result_pca[[1]]
   train_time_pca <- train_result_pca[[2]]
 }
+
+if(run.feature.lasso){
+  train_result_lasso <- xgb_train(lasso_feature_train, para)
+  model_lasso <- train_result_lasso[[1]]
+  train_time_lasso <- train_result_lasso[[2]]
+}
 ```
 
 
@@ -301,6 +313,13 @@ if(run.feature.pca){
   pred_pca = test_result_pca[[1]]
   pred_pca = ifelse(pred_pca>0.5, 1, 0)
   test_time_pca = test_result_pca[[2]]
+}
+
+if(run.feature.lasso){
+  test_result_lasso = xgb_test(model_lasso, lasso_feature_test)
+  pred_lasso = test_result_lasso[[1]]
+  pred_lasso = ifelse(pred_lasso>0.5, 1, 0)
+  test_time_lasso = test_result_lasso[[2]]
 }
 ```
 
@@ -360,6 +379,22 @@ if(run.feature.pca){
   cat("The accuracy of xgb model with PCA selection is:", accuracy_pca*100, "%.\n")
   cat("The AUC of xgb model with PCA selection is:", auc, ".\n")
 }
+
+if(run.feature.lasso){
+  accuracy_lasso = mean(lasso_feature_test$label == pred_lasso)
+  
+  label_test <- as.numeric(lasso_feature_test$label)-1
+  weight_test <- rep(NA, length(label_test))
+  for (v in unique(label_test)){
+    weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+  }
+
+  tpr.fpr <- WeightedROC(pred_lasso, label_test, weight_test)
+  auc <- WeightedAUC(tpr.fpr)
+  
+  cat("The accuracy of xgb model with lasso selection is:", accuracy_lasso*100, "%.\n")
+  cat("The AUC of xgb model with lasso selection is:", auc, ".\n")
+}
 ```
 
 ### Summarize Running Time
@@ -382,6 +417,11 @@ if(run.feature.forward){
 if(run.feature.pca){
   cat("Time for training model=", train_time_pca[1], "s \n") 
   cat("Time for testing model=", test_time_pca[1], "s \n")
+}
+
+if(run.feature.lasso){
+  cat("Time for training model=", train_time_lasso[1], "s \n") 
+  cat("Time for testing model=", test_time_lasso[1], "s \n")
 }
 ```
 
