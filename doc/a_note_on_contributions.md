@@ -15,7 +15,7 @@ Project 3 Group 6
 
 Team members: Mengyao He, Qinzhe Hu, Yiqi Lei, Yuwei Tong, Jiaqi Yuan
 
-Summary: In this project, we developed an advanced model and improved the classification accuracy for images of emotion to 84.2%
+Summary: In this project, we developed an advanced model and improved the classification accuracy for images of emotion to 86.8%
 
 [Contribution Statement] All of us contributed design of the study and participate all the stages of this project. All team members contributed to the GitHub repository and prepared the presentation. All team members approve our work presented in our GitHub repository including this contribution statement.
 
